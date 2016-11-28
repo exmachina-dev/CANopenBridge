@@ -64,7 +64,7 @@ extern "C" {
 
 #ifdef USBTIN_DONGLE
 #define USBTIN_CAN (1)
-#include "usbtin.h"
+#include "USBtin.h"
 #endif
 
 #define TMR_TASK_INTERVAL   (1000)          /* Interval of tmrTask thread in microseconds */
