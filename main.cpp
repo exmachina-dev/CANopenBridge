@@ -58,6 +58,8 @@ extern "C" {
 #include "CO_helpers.h"
 #include "CO_units.h"
 
+#include "MFE_helpers.h"
+
 // #define USBTIN_DONGLE
 
 #ifdef USBTIN_DONGLE
@@ -166,6 +168,7 @@ int main (void){
             programAysnc(timer1msDiff);
 
             /* Process EEPROM */
+
             Thread::wait(1);
         }
     }
@@ -233,6 +236,7 @@ static void appTask_thread(void const *args){
             uint8_t     dataTx[CO_SDO_BUFFER_SIZE];
             uint32_t    abortCode=0;
             uint32_t    readSize;
+            MFEnode_t   node;
 
 #if (LPC_NODEID == 1) // If the LPC is the master
             while (err != 0) {
@@ -242,61 +246,12 @@ static void appTask_thread(void const *args){
 
                 Thread::wait(5000);
 
-                err = 0;
-
-                err = CO_SDO_read(MFE_NODEID, 0x1000, 0x0, dataRx, sizeof(dataRx), &abortCode, &readSize, 100);
-                USBport.printf("READ 1000 0: %d %x\r\n", err, abortCode);
-                if (err) continue;
-
-                readSize = 0;
-                abortCode = 0;
-
-                err = CO_SDO_read(MFE_NODEID, 0x1018, 0x1, dataRx, sizeof(dataRx), &abortCode, &readSize, 100);
-                USBport.printf("READ 1018 1: %d %x\r\n", err, abortCode);
-                if (err) continue;
-
-                readSize = 0;
-                abortCode = 0;
-
-                err = CO_SDO_read(MFE_NODEID, 0x1018, 0x2, dataRx, sizeof(dataRx), &abortCode, &readSize, 100);
-                USBport.printf("READ 1018 2: %d %x\r\n", err, abortCode);
-                if (err) continue;
-
-                abortCode = 0;
-
-                dataTx[0] = 0x00;
-                dataTx[1] = 0x04;
-                err = CO_SDO_write(MFE_NODEID, 0x1017, 0x0, dataTx, 2, &abortCode, 100);
-                USBport.printf("WRITE 1017 0: %d %x\r\n", err, swapBytes(abortCode));
-                if (err) continue;
-
-                abortCode = 0;
-                dataTx[0] = 0x25;
-                CO_SDO_write(MFE_NODEID, 0x2100, LPC_NODEID, dataTx, 1, &abortCode, 100);
-                USBport.printf("WRITE 2100 1: %d %x\r\n", err, swapBytes(abortCode));
-                if (err) continue;
-
-                abortCode = 0;
-                dataTx[0] = 0x25;
-                CO_SDO_write(MFE_NODEID, 0x2105, LPC_NODEID, dataTx, 1, &abortCode, 100);
-                USBport.printf("WRITE 2105 1: %d %x\r\n", err, swapBytes(abortCode));
-                if (err) continue;
-
-                abortCode = 0;
-                dataTx[0] = 0x25;
-                CO_SDO_write(MFE_NODEID, 0x2101, LPC_NODEID, dataTx, 1, &abortCode, 100);
-                USBport.printf("WRITE 2101 1: %d %x\r\n", err, swapBytes(abortCode));
-                if (err) continue;
-
-                abortCode = 0;
-                dataTx[0] = 0x25;
-                CO_SDO_write(MFE_NODEID, 0x2102, LPC_NODEID, dataTx, 1, &abortCode, 100);
-                USBport.printf("WRITE 2102 1: %d %x\r\n", err, swapBytes(abortCode));
+                err = MFE_scan(MFE_NODEID, &node, 100);
                 if (err) continue;
 
                 USBport.printf("AC : %d\r\n", err);
 
-                CO_sendNMTcommand(CO, CO_NMT_ENTER_OPERATIONAL, MFE_NODEID);
+                err = MFE_connect(&node, 100);
 
                 CO->NMT->operatingState = CO_NMT_OPERATIONAL;
             }
