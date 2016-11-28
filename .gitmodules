@@ -5,3 +5,6 @@
 	path = lib/CANopenNode
 	url = git@git.exmachina.fr:CANopenNode.git
 	branch = mbed
+[submodule "lib/libUSBtin"]
+	path = lib/libUSBtin
+	url = git@git.exmachina.fr:libUSBtin.git
